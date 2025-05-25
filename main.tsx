@@ -83,6 +83,11 @@ const App = () => {
           </li>
         ))}
       </ul>
+      <div className="border-b-1 border-b-gray-300" />
+      <p className="text-xs text-center">
+        Written by <a href="https://nico.dev">Nico Martin</a> / Code on{" "}
+        <a href="https://github.com/nico-martin/use-pipeline-demo">Github</a>
+      </p>
     </div>
   );
 };
