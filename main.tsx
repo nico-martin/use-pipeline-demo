@@ -6,6 +6,14 @@ import { usePipeline, UsePipelineStatus } from "use-pipeline";
 const App = () => {
   const [evaluating, setEvaluating] = React.useState<boolean>(false);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const worker = React.useMemo(
+    () =>
+      new Worker(new URL("./worker.ts", import.meta.url), {
+        type: "module",
+      }),
+    [],
+  );
+
   const [result, setResult] = React.useState<
     Array<{ label: string; score: number }>
   >([]);
@@ -20,9 +28,7 @@ const App = () => {
       device: ["webgpu", "wasm"],
       dtype: "q4",
     },
-    new Worker(new URL("./worker.ts", import.meta.url), {
-      type: "module",
-    }),
+    worker,
   );
 
   return (
