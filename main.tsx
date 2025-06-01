@@ -3,24 +3,24 @@ import { createRoot } from "react-dom/client";
 
 import { usePipeline, UsePipelineStatus } from "use-pipeline";
 
+const toLabelScore = (obj: any): { label: string; score: number } => ({
+  label: obj.label,
+  score: obj.score,
+});
+
+const unifyResult = (res: any): { label: string; score: number }[] =>
+  Array.isArray(res[0])
+    ? (res as any[][]).flat().map(toLabelScore)
+    : (res as any[]).map(toLabelScore);
+
 const App = () => {
   const [evaluating, setEvaluating] = React.useState<boolean>(false);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-  const worker = React.useMemo(
-    () =>
-      new Worker(new URL("./worker.ts", import.meta.url), {
-        type: "module",
-      }),
-    [],
-  );
 
   const [result, setResult] = React.useState<
     Array<{ label: string; score: number }>
   >([]);
-  const { pipe, status, progress } = usePipeline<
-    string,
-    Array<{ label: string; score: number }>
-  >(
+  const { pipe, status, progress } = usePipeline(
     "text-classification",
     "Xenova/distilbert-base-uncased-finetuned-sst-2-english",
     {
@@ -28,7 +28,6 @@ const App = () => {
       device: ["webgpu", "wasm"],
       dtype: "q4",
     },
-    worker,
   );
 
   return (
@@ -70,8 +69,8 @@ const App = () => {
         onClick={async () => {
           setEvaluating(true);
           const text = textareaRef?.current?.value || "";
-          const res = await pipe(text, { top_k: null });
-          setResult(res);
+          const res = await pipe([text, { top_k: 10 }]);
+          setResult(unifyResult(res));
           setEvaluating(false);
         }}
       >
